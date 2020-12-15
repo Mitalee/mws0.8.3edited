@@ -486,11 +486,12 @@ class Reports(MWS):
         )
         return self.get_report_request_list(next_token=token)
 
-    def request_report(self, report_type, start_date=None, end_date=None, marketplaceids=()):
+    def request_report(self, report_type, start_date=None, end_date=None, marketplaceids=(), report_options=None):
         data = dict(Action='RequestReport',
                     ReportType=report_type,
                     StartDate=start_date,
-                    EndDate=end_date)
+                    EndDate=end_date,
+                    ReportOptions=report_options)
         data.update(utils.enumerate_param('MarketplaceIdList.Id.', marketplaceids))
         return self.make_request(data)
 

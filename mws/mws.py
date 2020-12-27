@@ -262,21 +262,24 @@ class MWS(object):
                 
                 print('Size of MWS RESPONSE DATA: {0}KB'.format(int(response_data_size/1024)))
                 if response_data_size < DATA_SIZE_LIMIT:
+                    print('returning response data fully.')
                     data = response.content
-                    # print('returning response data fully.')
+                    
                 else:
+                    print('in ELSE LOOP FOR LARGE DATA OBJECT')
                     # error = MWSError('LARGE SIZE RESPONSE: MWS RESPONSE bigger than 100MB.')
                     # error.response = None
                     # raise error
                     import shutil
                     filename_on_disk = params['ReportId']+'.txt'
                     print('LARGE FILE: SAVING INSTEAD TO: ', filename_on_disk)
-                    print(response.raw)
+
                     with open(filename_on_disk, 'wb') as f:
+                        print('saving file.....please wait..')
                         shutil.copyfileobj(response.raw, f)
                     # Sending back the filename and no headers, else we get an md-5 error from the DataWrapper class that does extra calculations
                     parsed_response = {'filename': filename_on_disk}
-                    print('RETURNING LARGE FILE ON DISK: ', filename_on_disk)
+                    print('RETURNING LARGE FILE ON DISK: ', parsed_response)
                     return parsed_response
 
                 # I do not check the headers to decide which content structure to server simply because sometimes

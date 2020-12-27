@@ -23,6 +23,11 @@ try:
 except ImportError:
     from xml.parsers.expat import ExpatError as XMLError
 
+# The maximum size of a file that can be published in a single request is 100MB
+#Inspiration taken from https://github.com/tableau/server-client-python/pull/111
+DATA_SIZE_LIMIT = 1024 * 1024 * 75   # 75MB
+# DATA_SIZE_LIMIT = 1024 * 1  # 1KB
+
 
 __all__ = [
     'Feeds',
@@ -56,10 +61,6 @@ MARKETPLACES = {
 }
 
 
-# The maximum size of a file that can be published in a single request is 100MB
-#Inspiration taken from https://github.com/tableau/server-client-python/pull/111
-DATA_SIZE_LIMIT = 1024 * 1024 * 75   # 75MB
-# DATA_SIZE_LIMIT = 1024 * 1  # 1KB
 
 
 class MWSError(Exception):
@@ -278,7 +279,7 @@ class MWS(object):
                         print('saving file.....please wait..')
                         shutil.copyfileobj(response.raw, f)
                     # Sending back the filename and no headers, else we get an md-5 error from the DataWrapper class that does extra calculations
-                    parsed_response = {'filename': filename_on_disk}
+                    parsed_response =  DataWrapper({'filename': filename_on_disk}, '')
                     print('RETURNING LARGE FILE ON DISK: ', parsed_response)
                     return parsed_response
 

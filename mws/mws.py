@@ -241,14 +241,22 @@ class MWS(object):
             # to convert the dict to a url parsed string, so why do it twice if i can just pass the full url :).
             with request(method, url, data=kwargs.get('body', ''), headers=headers, stream=True) as response:
             # response = request(method, url, data=kwargs.get('body', ''), headers=headers)
-                response.raise_for_status()
+                # when using a 'with' block, the raise_for_status() function was raising errors and 
+                # this was not caught by the try-catch block immediately outside. So it had to be duplicated.    
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    error = MWSError(str(e.response.text))
+                    error.response = e.response
+                    raise error
+
                 # When retrieving data from the response object,
                 # be aware that response.content returns the content in bytes while response.text calls
                 # response.content and converts it to unicode.
 
                 # data = response.content
                 # response.content and converts it to unicode.
-                print('RESPONSE HEADERS: ', response.headers)
+                # print('RESPONSE HEADERS: ', response.headers)
                 ## calculate the response size in KB
                 response_data_size = int(response.headers['Content-Length'])
                 

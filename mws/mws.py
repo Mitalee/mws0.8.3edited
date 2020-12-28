@@ -242,8 +242,8 @@ class MWS(object):
             # to convert the dict to a url parsed string, so why do it twice if i can just pass the full url :).
             with request(method, url, data=kwargs.get('body', ''), headers=headers, stream=True) as response:
             # response = request(method, url, data=kwargs.get('body', ''), headers=headers)
-                # when using a 'with' block, the raise_for_status() function was raising errors and 
-                # this was not caught by the try-catch block immediately outside. So it had to be duplicated.    
+                # when using a 'with' block, the raise_for_status() function was raising errors and
+                # this was not caught by the try-catch block immediately outside. So it had to be duplicated.
                 try:
                     response.raise_for_status()
                 except Exception as e:
@@ -259,30 +259,32 @@ class MWS(object):
                 # response.content and converts it to unicode.
                 # print('RESPONSE HEADERS: ', response.headers)
                 ## calculate the response size in KB
-                response_data_size = int(response.headers['Content-Length'])
-                
-                print('Size of MWS RESPONSE DATA: {0}KB'.format(int(response_data_size/1024)))
-                if response_data_size < DATA_SIZE_LIMIT:
-                    print('returning response data fully.')
-                    data = response.content
-                    
+                if 'Content-Length' in response.headers:
+                    response_data_size = int(response.headers['Content-Length'])
+
+                    print('Size of MWS RESPONSE DATA: {0}KB'.format(int(response_data_size/1024)))
+                    if response_data_size < DATA_SIZE_LIMIT:
+                        print('returning response data fully.')
+                        data = response.content
+
+                    else:
+                        print('in ELSE LOOP FOR LARGE DATA OBJECT')
+                        # error = MWSError('LARGE SIZE RESPONSE: MWS RESPONSE bigger than 100MB.')
+                        # error.response = None
+                        # raise error
+                        import shutil
+                        filename_on_disk = params['ReportId']+'.txt'
+                        print('LARGE FILE: SAVING INSTEAD TO: ', filename_on_disk)
+
+                        with open(filename_on_disk, 'wb') as f:
+                            print('saving file.....please wait..')
+                            shutil.copyfileobj(response.raw, f)
+                        # Sending back the filename and no headers, else we get an md-5 error from the DataWrapper class that does extra calculations
+                        parsed_response =  DataWrapper({'filename': filename_on_disk}, '')
+                        print('RETURNING LARGE FILE ON DISK: ', parsed_response)
+                        return parsed_response
                 else:
-                    print('in ELSE LOOP FOR LARGE DATA OBJECT')
-                    # error = MWSError('LARGE SIZE RESPONSE: MWS RESPONSE bigger than 100MB.')
-                    # error.response = None
-                    # raise error
-                    import shutil
-                    filename_on_disk = params['ReportId']+'.txt'
-                    print('LARGE FILE: SAVING INSTEAD TO: ', filename_on_disk)
-
-                    with open(filename_on_disk, 'wb') as f:
-                        print('saving file.....please wait..')
-                        shutil.copyfileobj(response.raw, f)
-                    # Sending back the filename and no headers, else we get an md-5 error from the DataWrapper class that does extra calculations
-                    parsed_response =  DataWrapper({'filename': filename_on_disk}, '')
-                    print('RETURNING LARGE FILE ON DISK: ', parsed_response)
-                    return parsed_response
-
+                    data = response.content
                 # I do not check the headers to decide which content structure to server simply because sometimes
                 # Amazon's MWS API returns XML error responses with "text/plain" as the Content-Type.
                 rootkey = kwargs.get('rootkey', extra_data.get("Action") + "Result")

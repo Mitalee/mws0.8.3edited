@@ -262,13 +262,13 @@ class MWS(object):
                 if 'Content-Length' in response.headers:
                     response_data_size = int(response.headers['Content-Length'])
 
-                    print('Size of MWS RESPONSE DATA: {0}KB'.format(int(response_data_size/1024)))
+                    # print('Size of MWS RESPONSE DATA: {0}KB'.format(int(response_data_size/1024)))
                     if response_data_size < DATA_SIZE_LIMIT:
-                        print('returning response data fully.')
+                        # print('returning response data fully.')
                         data = response.content
 
                     else:
-                        print('in ELSE LOOP FOR LARGE DATA OBJECT')
+                        # print('in ELSE LOOP FOR LARGE DATA OBJECT')
                         # error = MWSError('LARGE SIZE RESPONSE: MWS RESPONSE bigger than 100MB.')
                         # error.response = None
                         # raise error

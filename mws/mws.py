@@ -262,6 +262,22 @@ class MWS(object):
                 if 'Content-Length' in response.headers:
                     response_data_size = int(response.headers['Content-Length'])
 
+                    # Print available memory before processing the report
+                    # https://stackoverflow.com/a/17718729
+                    if params and params["Action"] == "GetReport":
+                        with open('/proc/meminfo', 'r') as mem:
+                            ret = {}
+                            tmp = 0
+                            for i in mem:
+                                sline = i.split()
+                                if str(sline[0]) == 'MemTotal:':
+                                    ret['total'] = int(sline[1])
+                                elif str(sline[0]) in ('MemFree:', 'Buffers:', 'Cached:'):
+                                    tmp += int(sline[1])
+                            ret['free'] = tmp
+                            ret['used'] = int(ret['total']) - int(ret['free'])
+                        print("Available Memory: {0} MB".format(round(ret["free"]/(1024.**1), 2)))
+
                     # print('Size of MWS RESPONSE DATA: {0}KB'.format(int(response_data_size/1024)))
                     if response_data_size < DATA_SIZE_LIMIT:
                         # print('returning response data fully.')
